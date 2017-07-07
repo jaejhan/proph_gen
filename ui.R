@@ -1,32 +1,49 @@
-library(shiny)
+library(shinydashboard)
 library(DT)
 
-shinyUI(navbarPage("Proph Gen",
-  # Model evaluation --------------------------------------------------------
-  tabPanel("Model training",
-    sidebarLayout(
-      sidebarPanel(
-        h3("Prophecy Generator"),
-        p("This Shiny app implements Facebook's prophet package for time series forecasting."),
-        br(),
-        fileInput('df', 'Choose .csv file',
-                  accept=c('.csv', 'text/csv', 'text/comma-separated-values,text/plain')),
-        
-        checkboxInput("log_trans", label = "Log transform y-variable?", value = FALSE),
-        
-        actionButton("run_model", "Forecast")
-      
-      ),  # End sidebarPanel
-      
-      mainPanel(
-        plotOutput("forecast_plot"), 
-        plotOutput("component_plot")
-      )  # End mainPanel
-    )  # End sidebarLayout        
-       
-  ),  # End tabPanel ("Model training")
+ui <- dashboardPage(
+  ##################################################################################
+  dashboardHeader(title = "Prophecy Generator"),
   
-  # Model comparison --------------------------------------------------------  
-  tabPanel("Model comparison")
-))
+  ##################################################################################
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Model training", tabName = "model_train", icon = icon("dashboard")),
+      menuItem("Model comparison", tabName = "model_eval", icon = icon("th")),
+      
+      br(),
+      
+      fileInput('df', 'Choose .csv file',
+                accept=c('.csv', 'text/csv', 'text/comma-separated-values,text/plain')),
+      
+      checkboxInput("log_trans", label = "Log transform y-variable?", value = FALSE),
+      
+      actionButton("run_model", "Forecast")
+    )
+  ),
+  
+  ##################################################################################
+  dashboardBody(
+    tabItems(
+      # First tab content
+      tabItem(tabName = "model_train",
+        fluidRow(
+          box(
+            plotOutput("forecast_plot")
+          ),
+                
+          box(
+            plotOutput("component_plot")
+          )
+        )
+      ),
+      
+      # Second tab content
+      tabItem(tabName = "model_eval",
+        h2("Widgets tab content")
+      )
+    )
+  )  # End dashboardBody
+
+)
 

@@ -1,10 +1,10 @@
-library(shiny)
+library(shinydashboard)
 library(prophet)
 library(readr)
 library(DT)
 load("data/proph_gen_ex.Rdata")
 
-shinyServer(function(input, output) {
+server <- function(input, output) {
   # Prepare dataset -----------------------------------------------------------
   df <- reactive({
     if (is.null(input$df)) {
@@ -48,4 +48,4 @@ shinyServer(function(input, output) {
     prophet_plot_components(model_obj(), forecast())
   })
   
-})
+}
