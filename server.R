@@ -21,13 +21,13 @@ server <- function(input, output) {
     }
   })
   
-  cap_val <- reactive({
+  cap_val <- eventReactive(input$run_model, {
     if (input$growth == "logistic") {
       input$cap
     }
   })
   
-  df_cap <- reactive({
+  df_cap <- eventReactive(input$run_model, {
     df_cap <- df()
     if (input$growth == "linear") {
       df_cap
@@ -37,7 +37,7 @@ server <- function(input, output) {
     }
   })
   
-  df2 <- reactive({
+  df2 <- eventReactive(input$run_model, {
     if (input$log_trans) {
       df2 <- df_cap()
       df2$y <- log(df2$y)
@@ -56,7 +56,7 @@ server <- function(input, output) {
     m <- prophet(df2(), growth = input$growth)
   })
   
-  future <- reactive({
+  future <- eventReactive(input$run_model, {
     future <- make_future_dataframe(model_obj(), periods = 365) 
     
     if (any(names(df2()) %in% 'cap')) {
@@ -70,11 +70,11 @@ server <- function(input, output) {
     future
   })
   
-  forecast <- reactive({
+  forecast <- eventReactive(input$run_model, {
     forecast <- predict(model_obj(), future()) 
   })
   
-  df_plot <- reactive({
+  df_plot <- eventReactive(input$run_model, {
     df_plot <- df_for_plotting(model_obj(), forecast())
   })
   
