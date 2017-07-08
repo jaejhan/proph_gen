@@ -8,11 +8,6 @@ ui <- dashboardPage(
   ##################################################################################
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Model training", tabName = "model_train", icon = icon("dashboard")),
-      menuItem("Model comparison", tabName = "model_eval", icon = icon("th")),
-      
-      br(),
-      
       fileInput('df', 'Choose .csv file',
                 accept=c('.csv', 'text/csv', 'text/comma-separated-values,text/plain')),
       
@@ -24,40 +19,29 @@ ui <- dashboardPage(
   
   ##################################################################################
   dashboardBody(
-    tabItems(
-      # First tab content
-      tabItem(tabName = "model_train", 
-        fluidRow(
-          tabBox(id = "tabset1", width = 12, height = 500,
-            tabPanel("Main", 
-              plotOutput("forecast_plot")
-            ),
+    fluidRow(
+      tabBox(id = "tabset1", width = 12, height = 500,
+        tabPanel("Main", 
+          plotOutput("forecast_plot")
+        ),
             
-            tabPanel("Trend", 
-              plotOutput("trend_plot")
-            ),
+        tabPanel("Trend", 
+          plotOutput("trend_plot")
+        ),
             
-            tabPanel("Yearly", 
-              plotOutput("yearly_plot")
-            ),
+        tabPanel("Yearly", 
+          plotOutput("yearly_plot")
+        ),
             
-            tabPanel("Weekly", 
-              plotOutput("weekly_plot")
-            ),
-            
-            tabPanel("Holidays", 
-              h2("placeholder")
-            )
-          )  # End tabBox
-        )  # End fluidRow
-      ),
-      
-      # Second tab content
-      tabItem(tabName = "model_eval",
-        h2("Widgets tab content")
-      )
-    )
+        tabPanel("Weekly", 
+          plotOutput("weekly_plot")
+        ),
+          
+        tabPanel("Holidays", 
+          h2("placeholder")
+        )
+      )  # End tabBox
+    )  # End fluidRow
   )  # End dashboardBody
-
 )
 
