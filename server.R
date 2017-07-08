@@ -1,7 +1,11 @@
 library(shinydashboard)
 library(prophet)
 library(readr)
-library(DT)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(zoo)
+source("helpers.R")
 load("data/proph_gen_ex.Rdata")
 
 server <- function(input, output) {
@@ -11,7 +15,7 @@ server <- function(input, output) {
       proph_gen_ex
     } else {
       inFile <- input$df
-      df <- read_csv(inFile$datapath)
+      df <- readr::read_csv(inFile$datapath)
       df$ds <- as.Date(df$ds, '%m/%d/%y')
       df
     }
@@ -40,12 +44,24 @@ server <- function(input, output) {
     forecast <- predict(model_obj(), future()) 
   })
   
+  df_plot <- reactive({
+    df_plot <- df_for_plotting(model_obj(), forecast())
+  })
+  
   output$forecast_plot <- renderPlot({
     plot(model_obj(), forecast())
   })
   
-  output$component_plot <- renderPlot({
-    prophet_plot_components(model_obj(), forecast())
+  output$trend_plot <- renderPlot({
+    plot_trend(df_plot())
+  })
+  
+  output$yearly_plot <- renderPlot({
+    plot_yearly(model_obj())
+  })
+  
+  output$weekly_plot <- renderPlot({
+    plot_weekly(model_obj())
   })
   
 }

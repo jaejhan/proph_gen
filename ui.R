@@ -34,15 +34,15 @@ ui <- dashboardPage(
             ),
             
             tabPanel("Trend", 
-              plotOutput("component_plot")
+              plotOutput("trend_plot")
             ),
             
             tabPanel("Yearly", 
-              h2("placeholder")
+              plotOutput("yearly_plot")
             ),
             
             tabPanel("Weekly", 
-              h2("placeholder")
+              plotOutput("weekly_plot")
             ),
             
             tabPanel("Holidays", 
