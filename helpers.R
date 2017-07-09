@@ -87,6 +87,31 @@ plot_weekly <- function(m, uncertainty = TRUE, weekly_start = 0) {
 }
 
 
+# plot_holidays -----------------------------------------------------------
+plot_holidays <- function(m, df, uncertainty = TRUE) {
+  holiday.comps <- unique(m$holidays$holiday) %>% as.character()
+  df.s <- data.frame(ds = df$ds,
+                     holidays = rowSums(df[, holiday.comps, drop = FALSE]),
+                     holidays_lower = rowSums(df[, paste0(holiday.comps,
+                                                          "_lower"), drop = FALSE]),
+                     holidays_upper = rowSums(df[, paste0(holiday.comps,
+                                                          "_upper"), drop = FALSE]))
+  df.s <- df.s[!is.na(df.s$holidays),]
+  # NOTE the above CI calculation is incorrect if holidays overlap in time.
+  # Since it is just for the visualization we will not worry about it now.
+  gg.holidays <- ggplot2::ggplot(df.s, ggplot2::aes(x = ds, y = holidays)) +
+    ggplot2::geom_line(color = "#0072B2", na.rm = TRUE)
+  if (uncertainty) {
+    gg.holidays <- gg.holidays +
+      ggplot2::geom_ribbon(ggplot2::aes(ymin = holidays_lower,
+                                        ymax = holidays_upper),
+                           alpha = 0.2,
+                           fill = "#0072B2",
+                           na.rm = TRUE)
+  }
+  return(gg.holidays)
+}
+
 
 # setup_dataframe ---------------------------------------------------------
 setup_dataframe <- function(m, df, initialize_scales = FALSE) {
@@ -196,7 +221,6 @@ make_seasonality_features <- function(dates, period, series.order, prefix) {
 }
 
 
-
 # fourier_series ----------------------------------------------------------
 fourier_series <- function(dates, period, series.order) {
   t <- dates - zoo::as.Date('1970-01-01')
@@ -207,4 +231,34 @@ fourier_series <- function(dates, period, series.order) {
     features[, i * 2] <- cos(x)
   }
   return(features)
+}
+
+
+# make_holiday_features ---------------------------------------------------
+make_holiday_features <- function(m, dates) {
+  scale.ratio <- m$holidays.prior.scale / m$seasonality.prior.scale
+  wide <- m$holidays %>%
+    dplyr::mutate(ds = zoo::as.Date(ds)) %>%
+    dplyr::group_by(holiday, ds) %>%
+    dplyr::filter(row_number() == 1) %>%
+    dplyr::do({
+      if (exists('lower_window', where = .) && !is.na(.$lower_window)
+          && !is.na(.$upper_window)) {
+        offsets <- seq(.$lower_window, .$upper_window)
+      } else {
+        offsets <- c(0)
+      }
+      names <- paste(
+        .$holiday, '_delim_', ifelse(offsets < 0, '-', '+'), abs(offsets), sep = '')
+      dplyr::data_frame(ds = .$ds + offsets, holiday = names)
+    }) %>%
+    dplyr::mutate(x = scale.ratio) %>%
+    tidyr::spread(holiday, x, fill = 0)
+  
+  holiday.mat <- data.frame(ds = dates) %>%
+    dplyr::left_join(wide, by = 'ds') %>%
+    dplyr::select(-ds)
+  
+  holiday.mat[is.na(holiday.mat)] <- 0
+  return(holiday.mat)
 }

@@ -7,15 +7,16 @@ library(tidyr)
 library(zoo)
 source("helpers.R")
 load("data/proph_gen_ex.Rdata")
+load("data/proph_gen_holiday_ex.Rdata")
 
 server <- function(input, output) {
-  # Prepare dataset -----------------------------------------------------------
+  # Prepare main dataset -----------------------------------------------------------
   df <- reactive({
     if (is.null(input$df)) {
       proph_gen_ex
     } else {
-      inFile <- input$df
-      df <- readr::read_csv(inFile$datapath)
+      in_file <- input$df
+      df <- readr::read_csv(in_file$datapath)
       df$ds <- as.Date(df$ds, '%m/%d/%y')
       df
     }
@@ -50,10 +51,28 @@ server <- function(input, output) {
       df_cap()
     }
   })
+  
+
+  # Prepare holidays dataset ---------------------------------------------------
+  holiday_df <- reactive({
+    if (is.null(input$df) & input$holiday_effect == "yes") {
+      proph_gen_holiday_ex
+    } else if (is.null(input$df) & input$holiday_effect == "no") {
+      NULL
+    } else if (!is.null(input$holiday_df) & input$holiday_effect == "yes") {
+      in_file_hol <- input$holiday_df
+      holiday_df <- readr::read_csv(in_file_hol$datapath)
+      holiday_df$ds <- as.Date(holiday_df$ds, '%m/%d/%y')
+      holiday_df
+    } else {
+      NULL
+    }
+  })
+  
 
   # Run model -----------------------------------------------------------------
   model_obj <- eventReactive(input$run_model, {
-    m <- prophet(df2(), growth = input$growth)
+    m <- prophet(df2(), growth = input$growth, holidays = holiday_df())
   })
   
   future <- eventReactive(input$run_model, {
@@ -92,6 +111,18 @@ server <- function(input, output) {
   
   output$weekly_plot <- renderPlot({
     plot_weekly(model_obj())
+  })
+  
+  output$holiday_plot <- renderPlot({
+    input$run_model
+    
+    if (isolate(input$holiday_effect) == "yes") {
+      plot_holidays(model_obj(), df_plot())
+    } else {
+      ggplot() +
+        ggtitle("No holiday effect")
+    }
+    
   })
   
 }

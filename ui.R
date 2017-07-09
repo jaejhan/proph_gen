@@ -6,23 +6,27 @@ ui <- dashboardPage(
   
   ##################################################################################
   dashboardSidebar(
-    sidebarMenu(
-      fileInput('df', 'Choose .csv file',
-                accept=c('.csv', 'text/csv', 'text/comma-separated-values,text/plain')),
-
-      checkboxInput("log_trans", label = "Log transform y-variable", value = FALSE),
+    fileInput('df', 'Upload time series file (.csv):',
+              accept=c('.csv', 'text/csv', 'text/comma-separated-values,text/plain')),
       
-      radioButtons("growth", label = strong("Growth type:"),
-                   choices = list("linear" = "linear", "logistic" = "logistic"), 
-                   selected = "linear"),
+    fileInput('holiday_df', 'Upload holidays file (.csv):',
+              accept=c('.csv', 'text/csv', 'text/comma-separated-values,text/plain')),
+  
+    checkboxInput("log_trans", label = "Log transform y-variable", value = FALSE),
+    
+    radioButtons("holiday_effect", label = strong("Add holiday effect"),
+                 choices = list("Yes" = "yes", "No" = "no"),
+                 selected = "no"),
       
-      # Display this only if logistic growth is selected
-      conditionalPanel(condition = "input.growth == 'logistic'",
-        numericInput("cap", label = strong("Add constant cap"), value = 1)
-      )
+    radioButtons("growth", label = strong("Growth type:"),
+                 choices = list("linear" = "linear", "logistic" = "logistic"), 
+                 selected = "linear"),
       
+    # Display this only if logistic growth is selected
+    conditionalPanel(condition = "input.growth == 'logistic'",
+      numericInput("cap", label = strong("Add constant cap"), value = 1)
     )
-  ),
+  ),  # End dashboardSidebar
   
   ##################################################################################
   dashboardBody(
@@ -50,7 +54,7 @@ ui <- dashboardPage(
         ),
           
         tabPanel("Holidays", 
-          h2("placeholder")
+          plotOutput("holiday_plot")
         )
       )  # End tabBox
     )  # End fluidRow
