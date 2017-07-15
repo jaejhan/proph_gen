@@ -72,7 +72,10 @@ server <- function(input, output) {
 
   # Run model -----------------------------------------------------------------
   model_obj <- eventReactive(input$run_model, {
-    m <- prophet(df2(), growth = input$growth, holidays = holiday_df())
+    m <- prophet(df = df2(), 
+                 growth = input$growth, 
+                 holidays = holiday_df(), 
+                 changepoint.prior.scale = input$changept_prior_scale)
   })
   
   future <- eventReactive(input$run_model, {

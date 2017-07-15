@@ -14,10 +14,6 @@ ui <- dashboardPage(
   
     checkboxInput("log_trans", label = "Log transform y-variable", value = FALSE),
     
-    radioButtons("holiday_effect", label = strong("Add holiday effect"),
-                 choices = list("Yes" = "yes", "No" = "no"),
-                 selected = "no"),
-      
     radioButtons("growth", label = strong("Growth type:"),
                  choices = list("linear" = "linear", "logistic" = "logistic"), 
                  selected = "linear"),
@@ -25,7 +21,15 @@ ui <- dashboardPage(
     # Display this only if logistic growth is selected
     conditionalPanel(condition = "input.growth == 'logistic'",
       numericInput("cap", label = strong("Add constant cap"), value = 1)
-    )
+    ),
+    
+    numericInput("changept_prior_scale", label = strong("Adjust changepoint prior scale:"), value = 0.05),
+    
+    radioButtons("holiday_effect", label = strong("Add holiday effect"),
+                 choices = list("Yes" = "yes", "No" = "no"),
+                 selected = "no")
+    
+    
   ),  # End dashboardSidebar
   
   ##################################################################################
